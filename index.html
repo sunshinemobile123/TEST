@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Stream Sender</title>
+</head>
+<body>
+  <video id="video" autoplay playsinline muted style="display:none;"></video>
+  <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const socket = new WebSocket('ws://192.168.1.10:8080'); // replace with your server IP
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+        video.play();
+      });
+
+    socket.onopen = () => {
+      setInterval(() => {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const frame = canvas.toDataURL('image/jpeg');
+        socket.send(frame);
+      }, 100); // 10 fps
+    };
+  </script>
+</body>
+</html>
